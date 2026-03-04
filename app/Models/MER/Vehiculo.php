@@ -110,6 +110,11 @@ class Vehiculo extends Model
 		return $this->hasMany(Reserva::class, 'codveh');
 	}
 
+	public function user()
+	{
+		return $this->belongsTo(User::class, 'user_id');
+	}
+
 
 
 	public function accesorios()
