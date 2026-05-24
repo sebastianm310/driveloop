@@ -15,193 +15,91 @@
 
                 <div class="text-center mb-8">
                     <h1 class="text-4xl font-bold text-gray-900" style="font-family: 'Segoe UI', sans-serif;">
-                        Métodos de pago
+                        Checkout
                     </h1>
                     <p class="text-gray-500 mt-2 text-sm">
-                        Complete toda la información para completar el proceso de renta del vehículo.
+                        Revisa los detalles de tu reserva y procede al pago seguro.
                     </p>
                 </div>
 
                 <div class="grid lg:grid-cols-[1fr_360px] gap-8 items-start">
 
-                    {{-- ===== IZQUIERDA: MÉTODOS ===== --}}
-                    <div class="space-y-3">
-
-                        {{-- TARJETA --}}
-                        <div id="block-card" onclick="selectMethod('card')"
-                            class="method-card selected rounded-xl border border-gray-200 bg-white shadow-sm cursor-pointer transition-all duration-200">
-                            <div class="flex items-center gap-4 px-5 py-4">
-                                <div class="flex items-center flex-shrink-0 gap-1.5">
-                                    <div class="relative w-9 h-6 flex-shrink-0">
-                                        <div class="w-6 h-6 rounded-full bg-red-600 absolute left-0 top-0"></div>
-                                        <div class="w-6 h-6 rounded-full bg-orange-400 absolute left-3 top-0 opacity-90"></div>
-                                    </div>
-                                    <span class="text-blue-800 font-extrabold italic text-sm tracking-tighter ml-1">VISA</span>
-                                </div>
-                                <div class="flex-1 min-w-0 text-left">
-                                    <p class="font-bold text-gray-900 text-sm leading-tight">Tarjetas de crédito o débito</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">Paga con tarjeta de crédito Visa o Mastercard.</p>
-                                </div>
-                                <div class="radio-ring w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                                    <div class="radio-dot w-2.5 h-2.5 rounded-full bg-red-500 opacity-0 transition-opacity"></div>
-                                </div>
+                    {{-- ===== IZQUIERDA: DISEÑO PREMIUM PAGO SEGURO MERCADO PAGO ===== --}}
+                    <x-card class="bg-gradient-to-br from-gray-50 to-white p-6 md:p-8 space-y-6 text-left border-0">
+                        
+                        {{-- Cabecera de Plataforma --}}
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 text-blue-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-6 h-6">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+                                </svg>
                             </div>
+                            <h3 class="text-lg font-bold text-gray-900 leading-snug">Plataforma de Pago</h3>
+                        </div>
 
-                            <div id="panel-card" class="px-5 pb-5 space-y-3" onclick="event.stopPropagation()">
-                                <input
-                                    id="card-numero"
-                                    name="card_numero"
-                                    form="form-pago"
-                                    type="text"
-                                    inputmode="numeric"
-                                    maxlength="19"
-                                    placeholder="Número de la tarjeta"
-                                    class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                />
+                        <hr class="border-gray-100" />
 
-                                <input
-                                    id="card-nombre"
-                                    name="card_nombre"
-                                    form="form-pago"
-                                    type="text"
-                                    placeholder="Nombre del titular"
-                                    class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                />
+                        {{-- Información del Proveedor --}}
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Procesado por</span>
+                                <img src="{{ asset('images/logo_mercadopago.svg') }}" alt="Mercado Pago" class="h-6 w-auto object-contain" />
+                            </div>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                Serás redirigido de forma segura a la pasarela de <strong>Mercado Pago</strong> para completar tu transacción de manera rápida y confiable. Allí podrás elegir cómodamente tu método de pago preferido (tarjetas de crédito, PSE, Nequi, entre otros).
+                            </p>
+                        </div>
 
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <input
-                                            id="card-expiry"
-                                            name="card_expiry"
-                                            form="form-pago"
-                                            type="text"
-                                            inputmode="numeric"
-                                            maxlength="5"
-                                            placeholder="MM/AA"
-                                            class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                        />
+                        {{-- Métodos soportados pasivos --}}
+                        <div class="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+                            <span class="block text-xs font-semibold text-gray-500 uppercase tracking-wider text-center md:text-left">
+                                Métodos de pago aceptados en la pasarela:
+                            </span>
+                            <div class="grid grid-cols-4 gap-3 items-center justify-items-center">
+                                {{-- Tarjetas --}}
+                                <div class="flex flex-col items-center gap-1">
+                                    <div class="flex items-center gap-1.5 h-10">
+                                        <img src="{{ asset('images/logo_visa.svg') }}" alt="Visa" class="h-6 w-auto object-contain" />
+                                        <img src="{{ asset('images/logo_mastercard.svg') }}" alt="Mastercard" class="h-6 w-auto object-contain" />
                                     </div>
-                                    <div>
-                                        <input
-                                            id="card-cvv"
-                                            name="card_cvv"
-                                            form="form-pago"
-                                            type="password"
-                                            inputmode="numeric"
-                                            maxlength="4"
-                                            placeholder="CVV"
-                                            class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                        />
-                                    </div>
+                                    <span class="text-[10px] text-gray-400 font-medium">Tarjetas</span>
                                 </div>
 
-                                <input
-                                    id="card-documento"
-                                    form="form-pago"
-                                    type="text"
-                                    inputmode="numeric"
-                                    placeholder="Documento del titular"
-                                    class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                />
+                                {{-- PSE --}}
+                                <div class="flex flex-col items-center gap-1">
+                                    <div class="h-10 flex items-center justify-center overflow-visible">
+                                        <img src="{{ asset('images/logo_pse.png') }}" alt="PSE" class="h-12 w-auto object-contain scale-[1.3]" />
+                                    </div>
+                                    <span class="text-[10px] text-gray-400 font-medium">PSE</span>
+                                </div>
+
+                                {{-- Nequi --}}
+                                <div class="flex flex-col items-center gap-1">
+                                    <div class="h-10 flex items-center justify-center">
+                                        <img src="{{ asset('images/nequi_logo.svg') }}" alt="Nequi" class="h-8 w-auto object-contain" />
+                                    </div>
+                                    <span class="text-[10px] text-gray-400 font-medium">Nequi</span>
+                                </div>
+
+                                {{-- Efectivo --}}
+                                <div class="flex flex-col items-center gap-1">
+                                    <div class="h-10 flex items-center justify-center text-emerald-600">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-8 h-8">
+                                            <rect x="2" y="5" width="20" height="14" rx="2" stroke="currentColor" fill="none" />
+                                            <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 9h.01M18 9h.01M6 15h.01M18 15h.01" />
+                                        </svg>
+                                    </div>
+                                    <span class="text-[10px] text-gray-400 font-medium">Efectivo</span>
+                                </div>
                             </div>
                         </div>
 
-                        {{-- TRANSFERENCIA --}}
-                        <div id="block-transfer" onclick="selectMethod('transfer')"
-                            class="method-card rounded-xl border border-gray-200 bg-white shadow-sm cursor-pointer transition-all duration-200">
-                            <div class="flex items-center gap-4 px-5 py-4">
-                                <div class="w-9 h-9 rounded-full bg-indigo-700 flex items-center justify-center flex-shrink-0">
-                                    <span class="text-white text-[9px] font-bold leading-none">PSE</span>
-                                </div>
-                                <div class="flex-1 min-w-0 text-left">
-                                    <p class="font-bold text-gray-900 text-sm leading-tight">Transferencia Bancaria</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">Paga mediante transferencias bancarias locales.</p>
-                                </div>
-                                <div class="radio-ring w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                                    <div class="radio-dot w-2.5 h-2.5 rounded-full bg-red-500 opacity-0 transition-opacity"></div>
-                                </div>
-                            </div>
 
-                            <div id="panel-transfer" class="hidden px-5 pb-5 space-y-3" onclick="event.stopPropagation()">
-                                <div class="bg-gray-50 border border-red-100 rounded-lg p-4 text-sm text-gray-600 space-y-1.5">
-                                    <p><span class="font-semibold text-gray-800">Banco:</span> Bancolombia</p>
-                                    <p><span class="font-semibold text-gray-800">Cuenta:</span> 123-456789-00 (Corriente)</p>
-                                    <p><span class="font-semibold text-gray-800">NIT:</span> 900.123.456-7</p>
-                                    <p><span class="font-semibold text-gray-800">Titular:</span> DriveLoop SAS</p>
-                                </div>
-
-                                <input
-                                    id="transfer-comprobante"
-                                    name="transfer_comprobante"
-                                    form="form-pago"
-                                    type="text"
-                                    inputmode="numeric"
-                                    placeholder="Número o referencia de comprobante"
-                                    class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                />
-                            </div>
-                        </div>
-
-                        {{-- NEQUI --}}
-                        <div id="block-nequi" onclick="selectMethod('nequi')"
-                            class="method-card rounded-xl border border-gray-200 bg-white shadow-sm cursor-pointer transition-all duration-200">
-                            <div class="flex items-center gap-4 px-5 py-4">
-                                <div class="w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center flex-shrink-0 shadow-sm">
-                                    <span class="text-purple-700 font-black text-[10px] leading-none italic">'Nequi</span>
-                                </div>
-                                <div class="flex-1 min-w-0 text-left">
-                                    <p class="font-bold text-gray-900 text-sm leading-tight">Nequi</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">Pagar con fondos del monedero Nequi.</p>
-                                </div>
-                                <div class="radio-ring w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center flex-shrink-0 transition-all">
-                                    <div class="radio-dot w-2.5 h-2.5 rounded-full bg-red-500 opacity-0 transition-opacity"></div>
-                                </div>
-                            </div>
-
-                            <div id="panel-nequi" class="hidden px-5 pb-5 space-y-3" onclick="event.stopPropagation()">
-                                <div class="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <input
-                                            id="nequi-nombre"
-                                            form="form-pago"
-                                            type="text"
-                                            placeholder="Nombre"
-                                            class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                        />
-                                    </div>
-                                    <div>
-                                        <input
-                                            id="nequi-apellido"
-                                            form="form-pago"
-                                            type="text"
-                                            placeholder="Apellido"
-                                            class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                        />
-                                    </div>
-                                </div>
-
-                                <input
-                                    id="nequi-telefono"
-                                    name="nequi_telefono"
-                                    form="form-pago"
-                                    type="text"
-                                    inputmode="numeric"
-                                    maxlength="10"
-                                    placeholder="Número de celular"
-                                    class="field-input w-full border border-red-300 rounded-lg px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-500 bg-white"
-                                />
-
-                                <div id="qr-nequi" class="hidden mt-4 text-center">
-                                    <p class="text-sm text-gray-600 mb-2">Escanea el código QR para abrir la app de Nequi</p>
-                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=nequi://"
-                                        alt="QR para abrir Nequi" class="mx-auto" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    </x-card>
 
                     {{-- ===== DERECHA: RESUMEN ===== --}}
-                    <div class="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100">
+                    <x-card class="bg-white overflow-hidden border-0">
 
                         <div class="px-5 pt-5 pb-4 grid grid-cols-2 gap-3 border-b border-gray-100">
                             <div>
@@ -304,70 +202,20 @@
                                 <input type="hidden" name="pickup_date" value="{{ $reserva->fecini->format('Y-m-d') }}">
                                 <input type="hidden" name="return_date" value="{{ $reserva->fecfin->format('Y-m-d') }}">
                                 <input type="hidden" name="monto" value="{{ $monto }}">
-                                <input type="hidden" name="provider" value="{{ config('payments.default', 'simulated') }}">
-                                <input type="hidden" name="metodo_pago" id="metodo_pago" value="card">
+                                <input type="hidden" name="provider" value="mercadopago">
+                                <input type="hidden" name="metodo_pago" id="metodo_pago" value="transfer">
 
-                                <button type="submit"
-                                    class="w-full rounded-xl bg-[#C91843] py-3 text-white font-bold hover:bg-[#981B39] transition">
+                                <x-button type="primary"
+                                    class="w-full flex items-center justify-center !py-2.5 !px-4 !text-xs shadow-md !tracking-wider">
                                     Pagar ahora
-                                </button>
+                                </x-button>
                             </form>
                         </div>
 
-                    </div>
+                    </x-card>
                 </div>
             </div>
         </div>
     </div>
-
-    <style>
-        .method-card.selected {
-            border-color: #ef4444 !important;
-            box-shadow: 0 0 0 1px #ef4444;
-        }
-
-        .method-card.selected .radio-ring {
-            border-color: #ef4444;
-        }
-
-        .method-card.selected .radio-dot {
-            opacity: 1 !important;
-        }
-    </style>
-
-    <script>
-        let selectedKey = 'card';
-
-        function selectMethod(key) {
-            const methods = ['card', 'transfer', 'nequi'];
-
-            methods.forEach(k => {
-                const panel = document.getElementById('panel-' + k);
-                const block = document.getElementById('block-' + k);
-
-                if (k === key) {
-                    panel.classList.remove('hidden');
-                    block.classList.add('selected');
-                } else {
-                    panel.classList.add('hidden');
-                    block.classList.remove('selected');
-                }
-            });
-
-            selectedKey = key;
-            document.getElementById('metodo_pago').value = key;
-
-            const qrNequi = document.getElementById('qr-nequi');
-            if (key === 'nequi') {
-                qrNequi.classList.remove('hidden');
-            } else {
-                qrNequi.classList.add('hidden');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            selectMethod('card');
-        });
-    </script>
 
 </x-page>

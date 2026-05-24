@@ -4,9 +4,9 @@ return [
     'default' => env('PAYMENT_PROVIDER', 'simulated'),
 
     'mercadopago' => [
-        'access_token' => env('MERCADOPAGO_ACCESS_TOKEN'),
-        'public_key' => env('MERCADOPAGO_PUBLIC_KEY'),
-        'webhook_secret' => env('MERCADOPAGO_WEBHOOK_SECRET'),
+        'access_token' => env('MERCADO_PAGO_ACCESS_TOKEN'),
+        'public_key' => env('MERCADO_PAGO_PUBLIC_KEY'),
+        'webhook_secret' => env('MERCADO_PAGO_WEBHOOK_SECRET'),
     ],
 
     'wompi' => [

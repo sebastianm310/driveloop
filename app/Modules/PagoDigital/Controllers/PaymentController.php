@@ -108,8 +108,22 @@ class PaymentController extends Controller
             ->with('error', $result['message'] ?? 'No fue posible procesar el pago.');
     }
 
-    public function success($id)
+    public function success(Request $request, $id)
     {
+        \Illuminate\Support\Facades\Log::info('Página de éxito - params:', $request->query());
+
+        // Resolver referencia temporal TMP- al ID real de la reserva
+        if (str_starts_with($id, 'TMP-')) {
+            $pago = \App\Models\MER\Pago::where('external_reference', $id)->first();
+            if ($pago) {
+                $id = $pago->codres;
+            }
+        }
+
+        // Fallback: verificar el pago directamente con Mercado Pago
+        // (en caso de que el webhook no haya llegado por el túnel local)
+        $this->verificarPagoConMercadoPago($request, $id);
+
         return view('modules.PagoDigital.success', compact('id'));
     }
 
@@ -118,9 +132,136 @@ class PaymentController extends Controller
         return view('modules.PagoDigital.failure');
     }
 
-    public function pending()
+    public function pending(Request $request)
     {
+        \Illuminate\Support\Facades\Log::info('Página de pendiente - params:', $request->query());
+
+        // Mercado Pago envía payment_id o collection_id
+        $paymentId = $request->query('payment_id') ?? $request->query('collection_id');
+
+        if ($paymentId) {
+            try {
+                $accessToken = config('payments.mercadopago.access_token');
+                if (app()->environment('local')) {
+                    \MercadoPago\MercadoPagoConfig::setRuntimeEnviroment(\MercadoPago\MercadoPagoConfig::LOCAL);
+                }
+                \MercadoPago\MercadoPagoConfig::setAccessToken($accessToken);
+
+                $client = new \MercadoPago\Client\Payment\PaymentClient();
+                $payment = $client->get($paymentId);
+
+                \Illuminate\Support\Facades\Log::info('Verificación de pago desde pending:', [
+                    'payment_id' => $paymentId,
+                    'status' => $payment->status ?? 'unknown',
+                    'status_detail' => $payment->status_detail ?? 'unknown',
+                    'external_reference' => $payment->external_reference ?? 'none',
+                ]);
+
+                if (($payment->status === 'approved' || $payment->status === 'pending') && !empty($payment->external_reference)) {
+                    $pago = \App\Models\MER\Pago::where('external_reference', $payment->external_reference)->first();
+
+                    if ($pago) {
+                        if ($pago->estado !== 'aprobado') {
+                            if ($payment->status === 'approved') {
+                                $this->aprobarPago($pago, $payment);
+                            } elseif ($payment->status === 'pending' && app()->environment('local')) {
+                                // En desarrollo local/sandbox, aprobamos el pago aunque venga como 'pending' para simular flujos (como PSE)
+                                $this->aprobarPago($pago, $payment);
+                            }
+                        }
+
+                        if ($pago->estado === 'aprobado') {
+                            // Redirigir a la página de éxito
+                            return redirect()->route('checkout.exito', $pago->codres)
+                                ->with('success', '¡Pago aprobado exitosamente!');
+                        }
+                    }
+                }
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Error verificando pago desde pending: ' . $e->getMessage());
+            }
+        }
+
         return view('modules.PagoDigital.pending');
+    }
+
+    /**
+     * Verificar el pago directamente con Mercado Pago API (fallback para cuando el webhook no llega).
+     */
+    private function verificarPagoConMercadoPago(Request $request, $reservaId): void
+    {
+        $paymentId = $request->query('payment_id') ?? $request->query('collection_id');
+        if (!$paymentId) {
+            return;
+        }
+
+        try {
+            $pago = \App\Models\MER\Pago::where('codres', $reservaId)->first();
+            if (!$pago || $pago->estado === 'aprobado') {
+                return;
+            }
+
+            $accessToken = config('payments.mercadopago.access_token');
+            if (app()->environment('local')) {
+                \MercadoPago\MercadoPagoConfig::setRuntimeEnviroment(\MercadoPago\MercadoPagoConfig::LOCAL);
+            }
+            \MercadoPago\MercadoPagoConfig::setAccessToken($accessToken);
+
+            $client = new \MercadoPago\Client\Payment\PaymentClient();
+            $payment = $client->get($paymentId);
+
+            \Illuminate\Support\Facades\Log::info('Verificación de pago desde success:', [
+                'payment_id' => $paymentId,
+                'status' => $payment->status ?? 'unknown',
+            ]);
+
+            if ($payment->status === 'approved') {
+                $this->aprobarPago($pago, $payment);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Error en fallback de verificación de pago: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Aprobar un pago y disparar generación de documentos + correos.
+     */
+    private function aprobarPago(\App\Models\MER\Pago $pago, $mpPayment): void
+    {
+        $pago->estado = 'aprobado';
+        $pago->approved_at = now();
+        $pago->external_payment_id = $mpPayment->id;
+        $pago->status_detail = $mpPayment->status_detail;
+        $pago->save();
+
+        $reserva = $pago->reserva;
+        if ($reserva) {
+            $reserva->codestres = 1; // Activa
+            $reserva->save();
+
+            // Generar documentos PDF
+            try {
+                $reserva->load([
+                    'user',
+                    'vehiculo.marca',
+                    'vehiculo.linea',
+                    'vehiculo.clase',
+                    'vehiculo.combustible',
+                    'vehiculo.ciudad',
+                    'vehiculo.poliza_vehiculo',
+                    'pago',
+                ]);
+                $documentoService = app(\App\Services\Reservas\ReservaDocumentoService::class);
+                $documentoService->generarYEnviar($reserva);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Error generando documentos desde fallback: ' . $e->getMessage());
+            }
+
+            // Disparar evento para correos de confirmación
+            \Illuminate\Support\Facades\Event::dispatch(
+                new \App\Modules\BusquedaReserva\Events\ReservaPagada($reserva)
+            );
+        }
     }
 
     public function webhook(Request $request, string $provider)

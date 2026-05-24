@@ -13,11 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        if (env('APP_ENV') === 'local') {
+            $middleware->trustProxies(at: '*');
+        }
+
         //-------------------------------------------------------------------------------------------------------------------
         // --- PASO B: EXCEPCIÓN DE MERCADO PAGO ---
         $middleware->validateCsrfTokens(except: [
             'api/webhook', // Si tu ruta está en api.php
             'webhook',     // Si tu ruta está en web.php
+            'pagos/webhook/*', // Exime todas las rutas de webhooks de pasarelas
         ]);
 
         // Registrar alias del middleware para verificar documentos aprobados

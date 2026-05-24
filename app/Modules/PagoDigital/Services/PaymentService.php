@@ -78,13 +78,6 @@ class PaymentService
             ]);
             $gatewayResponse['status'] = $this->normalizarEstadoPago($gatewayResponse['status'] ?? 'pendiente');
 
-            if (($gatewayResponse['status'] ?? null) === 'redirect') {
-                return [
-                    'status' => 'redirect',
-                    'url' => $gatewayResponse['url'],
-                ];
-            }
-
             if (($gatewayResponse['status'] ?? null) === 'rechazado') {
                 return [
                     'status' => 'rechazado',
@@ -105,18 +98,20 @@ class PaymentService
             $vehiculo->disp = 0;
             $vehiculo->save();
 
+            $estadoPagoDB = ($gatewayResponse['status'] === 'redirect') ? 'pendiente' : $gatewayResponse['status'];
+
             $pago = Pago::create([
                 'codres' => $reserva->cod,
                 'idusu' => $userId,
                 'referencia' => $gatewayResponse['reference'] ?? ('PAGO-' . strtoupper(Str::random(8)) . '-' . $reserva->cod),
                 'metodo' => $data['metodo_pago'],
                 'monto' => $data['monto'],
-                'estado' => $gatewayResponse['status'],
+                'estado' => $estadoPagoDB,
                 'moneda' => 'COP',
                 'fecha_pago' => now(),
                 'provider' => $data['provider'],
                 'external_payment_id' => $gatewayResponse['external_payment_id'] ?? null,
-                'external_reference' => $gatewayResponse['external_reference'] ?? null,
+                'external_reference' => $gatewayResponse['external_reference'] ?? $data['reserva_id'],
                 'status_detail' => $gatewayResponse['status_detail'] ?? null,
                 'detalle' => [
                     'reserva_temporal' => $data['reserva_id'],
@@ -128,6 +123,15 @@ class PaymentService
                 'webhook_payload' => null,
                 'approved_at' => ($gatewayResponse['status'] === 'aprobado') ? now() : null,
             ]);
+
+            if ($gatewayResponse['status'] === 'redirect') {
+                return [
+                    'status' => 'redirect',
+                    'url' => $gatewayResponse['url'],
+                    'reserva_id' => $reserva->cod,
+                    'pago_id' => $pago->id ?? null,
+                ];
+            }
 
             if ($gatewayResponse['status'] === 'aprobado') {
                 $this->generateDocuments($reserva);
@@ -192,6 +196,7 @@ class PaymentService
             'approved', 'aprobado' => 'aprobado',
             'pending', 'pendiente', 'in_process' => 'pendiente',
             'rejected', 'rechazado', 'failed', 'failure', 'fallido' => 'rechazado',
+            'redirect' => 'redirect',
             default => 'pendiente',
         };
     }
